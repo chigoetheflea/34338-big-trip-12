@@ -1,7 +1,7 @@
 # Личный проект «Большое путешествие» [![Build status][travis-image]][travis-url]
 
 * Студент: [Владимир Якубович](https://up.htmlacademy.ru/ecmascript/12/user/34338).
-* Наставник: `Дмитрий Гуляев`.
+* Наставник: [Дмитрий Гуляев](https://htmlacademy.ru/profile/dima).
 
 ---
 
