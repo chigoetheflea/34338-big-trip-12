@@ -1,4 +1,30 @@
-const render = (container, template, place) => {
+const RenderPosition = {
+  AFTERBEGIN: `afterbegin`,
+  BEFOREEND: `beforeend`
+};
+
+const render = (container, element, place) => {
+  switch (place) {
+    case RenderPosition.AFTERBEGIN:
+      container.prepend(element);
+
+      break;
+
+    case RenderPosition.BEFOREEND:
+      container.append(element);
+
+      break;
+  }
+};
+
+export const createElement = (template) => {
+  const newElement = document.createElement(`div`);
+  newElement.innerHTML = template;
+
+  return newElement.firstChild;
+};
+
+const renderElement = (container, template, place) => {
   container.insertAdjacentHTML(place, template);
 };
 
@@ -87,6 +113,8 @@ const getEventFullDays = (eventCurrent, eventNext) => {
 };
 
 export {
+  RenderPosition,
+  renderElement,
   render,
   getRandomInteger,
   getRandomBoolean,

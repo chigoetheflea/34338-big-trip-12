@@ -1,7 +1,7 @@
-import {getDateData, isItNeedsZero} from "../utils.js";
+import {getDateData, isItNeedsZero, createElement} from "../utils.js";
 import {MONTHES} from "../const.js";
 
-export const createDayInfoTemplate = (dayNumber, currentDate) => {
+const createDayInfoTemplate = (dayNumber, currentDate) => {
 
   const fullDate = getDateData(currentDate);
 
@@ -14,3 +14,27 @@ export const createDayInfoTemplate = (dayNumber, currentDate) => {
     </div>`
   );
 };
+
+export default class DayInfo {
+  constructor(dayNumber, currentDate) {
+    this._element = null;
+    this._dayNumber = dayNumber;
+    this._curretDate = currentDate;
+  }
+
+  _getTemplate() {
+    return createDayInfoTemplate(this._dayNumber, this._curretDate);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this._getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}

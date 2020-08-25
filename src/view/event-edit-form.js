@@ -1,5 +1,16 @@
 import {EVENT_TYPES, CITIES} from "../const.js";
-import {getDateData, getRandomBoolean} from "../utils.js";
+import {getDateData, getRandomBoolean, createElement} from "../utils.js";
+
+const BLANK_EVENT = {
+  eventType: null,
+  destination: ``,
+  dateStart: null,
+  dateEnd: null,
+  price: 0,
+  description: ``,
+  photo: ``,
+  offers: null
+};
 
 const createEventTypesTemplate = (type) => {
   const categoryCloseTemplate = `</fieldset>`;
@@ -89,17 +100,8 @@ const createOffersListTemplate = (offers) => {
   return ``;
 };
 
-export const createEventEditFormTemplate = (event = {}) => {
-  const {
-    eventType = null,
-    destination = ``,
-    dateStart = null,
-    dateEnd = null,
-    price = 0,
-    description = ``,
-    photo = ``,
-    offers = null
-  } = event;
+const createEventEditFormTemplate = (event) => {
+  const {eventType, destination, description, photo, dateStart, dateEnd, price, offers} = event;
 
   const eventTypesTemplate = createEventTypesTemplate(eventType);
 
@@ -115,7 +117,7 @@ export const createEventEditFormTemplate = (event = {}) => {
         <div class="event__type-wrapper">
           <label class="event__type  event__type-btn" for="event-type-toggle-1">
             <span class="visually-hidden">Choose event type</span>
-            <img class="event__type-icon" width="17" height="17" src="img/icons/${eventType}.png" alt="Event type icon">
+            <img class="event__type-icon" width="17" height="17" src="img/icons/${eventType.toLowerCase()}.png" alt="Event type icon">
           </label>
           <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox">
           ${eventTypesTemplate}
@@ -160,3 +162,26 @@ export const createEventEditFormTemplate = (event = {}) => {
     </form>`
   );
 };
+
+export default class EventEditForm {
+  constructor(event = BLANK_EVENT) {
+    this._element = null;
+    this._event = event;
+  }
+
+  _getTemplate() {
+    return createEventEditFormTemplate(this._event);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this._getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}
