@@ -1,4 +1,4 @@
-import {isItNeedsZero} from "../utils.js";
+import {isItNeedsZero, createElement} from "../utils.js";
 import {MONTHES} from "../const.js";
 
 const MAX_EVENTS_TO_SHOW = 3;
@@ -61,7 +61,7 @@ const createDatesTemplate = (dateStart, dateEnd) => {
   return `<p class="trip-info__dates">${dates}</p>`;
 };
 
-export const createTripRoutTemplate = (events) => {
+const createTripRoutTemplate = (events) => {
   const routTemplate = createRoutTemplate(events);
 
   const datesTemplate = createDatesTemplate(events[0].dateStart, events[events.length - 1].dateEnd);
@@ -74,3 +74,26 @@ export const createTripRoutTemplate = (events) => {
     </div>`
   );
 };
+
+export default class TripRout {
+  constructor(events) {
+    this._element = null;
+    this._events = events;
+  }
+
+  _getTemplate() {
+    return createTripRoutTemplate(this._events);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this._getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}

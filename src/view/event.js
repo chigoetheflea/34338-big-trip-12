@@ -1,4 +1,4 @@
-import {getDateData, isItNeedsZero} from "../utils.js";
+import {getDateData, isItNeedsZero, createElement} from "../utils.js";
 
 const HOUR_MS = 3600000;
 const DAY_MS = HOUR_MS * 24;
@@ -33,8 +33,6 @@ const createEventTimingTemplate = (dateStart, dateEnd) => {
         <time class="event__end-time" datetime="${dateEndData.date}">${dateEndData.time}</time>
       </p>
       <p class="event__duration">${dateDiff}</p>
-      ${dateStartData.date}
-      ${dateEndData.date}
     </div>`
   );
 };
@@ -57,7 +55,7 @@ const createOffersListTemplate = (offers) => {
   return ``;
 };
 
-export const createEventTemplate = (event) => {
+const createEventTemplate = (event) => {
 
   const {eventType, destination, dateStart, dateEnd, price, offers} = event;
 
@@ -82,3 +80,26 @@ export const createEventTemplate = (event) => {
     </div>`
   );
 };
+
+export default class Event {
+  constructor(event) {
+    this._element = null;
+    this._event = event;
+  }
+
+  _getTemplate() {
+    return createEventTemplate(this._event);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this._getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}
