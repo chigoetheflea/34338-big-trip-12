@@ -33,8 +33,6 @@ const createEventTimingTemplate = (dateStart, dateEnd) => {
         <time class="event__end-time" datetime="${dateEndData.date}">${dateEndData.time}</time>
       </p>
       <p class="event__duration">${dateDiff}</p>
-      ${dateStartData.date}
-      ${dateEndData.date}
     </div>`
   );
 };
