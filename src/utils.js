@@ -14,6 +14,9 @@ const render = (container, element, place) => {
       container.append(element);
 
       break;
+
+    default:
+      container.append(element);
   }
 };
 
@@ -99,12 +102,10 @@ const sortEventsByDate = (left, right) => {
 };
 
 const getEventFullDays = (eventCurrent, eventNext) => {
-  const eventCurrentMidnight = new Date();
-  eventCurrentMidnight.setDate(eventCurrent.dateStart.getDate());
+  const eventCurrentMidnight = new Date(+eventCurrent.dateStart);
   eventCurrentMidnight.setHours(0, 0, 0, 0);
 
-  const eventNextMidnight = new Date();
-  eventNextMidnight.setDate(eventNext.dateStart.getDate());
+  const eventNextMidnight = new Date(+eventNext.dateStart);
   eventNextMidnight.setHours(0, 0, 0, 0);
 
   const diffInDays = Math.floor((eventNextMidnight - eventCurrentMidnight) / (1000 * 60 * 60 * 24));
