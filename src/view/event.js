@@ -1,4 +1,5 @@
-import {getDateData, isItNeedsZero, createElement} from "../utils.js";
+import Abstract from "./abstract.js";
+import {getDateData, isItNeedsZero} from "../utils/events.js";
 
 const HOUR_MS = 3600000;
 const DAY_MS = HOUR_MS * 24;
@@ -81,25 +82,27 @@ const createEventTemplate = (event) => {
   );
 };
 
-export default class Event {
+export default class Event extends Abstract {
   constructor(event) {
-    this._element = null;
+    super();
+
     this._event = event;
+    this._clickHandler = this._clickHandler.bind(this);
   }
 
   _getTemplate() {
     return createEventTemplate(this._event);
   }
 
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this._getTemplate());
-    }
+  _clickHandler(evt) {
+    evt.preventDefault();
 
-    return this._element;
+    this._callback.click();
   }
 
-  removeElement() {
-    this._element = null;
+  setClickHandler(callback) {
+    this._callback.click = callback;
+
+    this.getElement().addEventListener(`click`, this._clickHandler);
   }
 }

@@ -1,4 +1,5 @@
-import {getDateData, isItNeedsZero, createElement} from "../utils.js";
+import Abstract from "./abstract.js";
+import {getDateData, isItNeedsZero} from "../utils/events.js";
 import {MONTHES} from "../const.js";
 
 const createDayInfoTemplate = (dayNumber, currentDate) => {
@@ -15,26 +16,15 @@ const createDayInfoTemplate = (dayNumber, currentDate) => {
   );
 };
 
-export default class DayInfo {
+export default class DayInfo extends Abstract {
   constructor(dayNumber, currentDate) {
-    this._element = null;
+    super();
+
     this._dayNumber = dayNumber;
     this._curretDate = currentDate;
   }
 
   _getTemplate() {
     return createDayInfoTemplate(this._dayNumber, this._curretDate);
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this._getTemplate());
-    }
-
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
   }
 }

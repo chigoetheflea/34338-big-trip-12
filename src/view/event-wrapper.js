@@ -1,4 +1,4 @@
-import {createElement} from "../utils.js";
+import Abstract from "./abstract.js";
 
 const createEventWrapperTemplate = () => {
   return (
@@ -6,24 +6,8 @@ const createEventWrapperTemplate = () => {
   );
 };
 
-export default class EventWrapper {
-  constructor() {
-    this._element = null;
-  }
-
+export default class EventWrapper extends Abstract {
   _getTemplate() {
     return createEventWrapperTemplate();
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this._getTemplate());
-    }
-
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
   }
 }

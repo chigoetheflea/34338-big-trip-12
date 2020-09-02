@@ -1,4 +1,4 @@
-import {createElement} from "../utils.js";
+import Abstract from "./abstract.js";
 
 const createDayItemTemplate = () => {
   return (
@@ -6,24 +6,8 @@ const createDayItemTemplate = () => {
   );
 };
 
-export default class DayItem {
-  constructor() {
-    this._element = null;
-  }
-
+export default class DayItem extends Abstract {
   _getTemplate() {
     return createDayItemTemplate();
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this._getTemplate());
-    }
-
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
   }
 }
