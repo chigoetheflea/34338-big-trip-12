@@ -1,5 +1,7 @@
+import Abstract from "./abstract.js";
 import {EVENT_TYPES, CITIES} from "../const.js";
-import {getDateData, getRandomBoolean, createElement} from "../utils.js";
+import {getDateData} from "../utils/events.js";
+import {getRandomBoolean} from "../utils/common.js";
 
 const BLANK_EVENT = {
   eventType: null,
@@ -163,25 +165,31 @@ const createEventEditFormTemplate = (event) => {
   );
 };
 
-export default class EventEditForm {
+export default class EventEditForm extends Abstract {
   constructor(event = BLANK_EVENT) {
-    this._element = null;
+    super();
+
     this._event = event;
+    this._formSubmitHandler = this._formSubmitHandler.bind(this);
+  }
+
+  _formSubmitHandler(evt) {
+    evt.preventDefault();
+
+    this._callback.submit();
   }
 
   _getTemplate() {
     return createEventEditFormTemplate(this._event);
   }
 
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this._getTemplate());
-    }
+  setFormSubmitHandler(callback) {
+    this._callback.submit = callback;
 
-    return this._element;
+    this.getElement().addEventListener(`submit`, this._formSubmitHandler);
   }
 
-  removeElement() {
-    this._element = null;
+  removeFormSubmitHandler() {
+    this.getElement().removeEventListener(`submit`, this._formSubmitHandler);
   }
 }

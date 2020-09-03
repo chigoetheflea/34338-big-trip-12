@@ -1,4 +1,5 @@
-import {isItNeedsZero, createElement} from "../utils.js";
+import Abstract from "./abstract.js";
+import {isItNeedsZero} from "../utils/events.js";
 import {MONTHES} from "../const.js";
 
 const MAX_EVENTS_TO_SHOW = 3;
@@ -75,25 +76,14 @@ const createTripRoutTemplate = (events) => {
   );
 };
 
-export default class TripRout {
+export default class TripRout extends Abstract {
   constructor(events) {
-    this._element = null;
+    super();
+
     this._events = events;
   }
 
   _getTemplate() {
     return createTripRoutTemplate(this._events);
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this._getTemplate());
-    }
-
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
   }
 }

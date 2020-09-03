@@ -1,4 +1,4 @@
-import {createElement} from "../utils.js";
+import Abstract from "./abstract.js";
 
 const createEventsListTemplate = () => {
   return (
@@ -6,24 +6,8 @@ const createEventsListTemplate = () => {
   );
 };
 
-export default class EventsList {
-  constructor() {
-    this._element = null;
-  }
-
+export default class EventsList extends Abstract {
   _getTemplate() {
     return createEventsListTemplate();
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this._getTemplate());
-    }
-
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
   }
 }
