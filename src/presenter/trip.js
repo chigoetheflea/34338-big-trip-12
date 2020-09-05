@@ -185,9 +185,7 @@ export default class Trip {
       this._defaultEventsList = this._events.slice();
 
       this._renderSorting();
-
       this._renderDays();
-
       this._renderEvents();
     }
   }
