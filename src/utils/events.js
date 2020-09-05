@@ -30,18 +30,6 @@ const getDateData = (dateData, format = ``) => {
   }
 };
 
-const sortEventsByDate = (left, right) => {
-  if (left.dateStart < right.dateStart) {
-    return -1;
-  }
-
-  if (left.dateStart > right.dateStart) {
-    return 1;
-  }
-
-  return 0;
-};
-
 const getEventFullDays = (eventCurrent, eventNext) => {
   const eventCurrentMidnight = new Date(+eventCurrent.dateStart);
   eventCurrentMidnight.setHours(0, 0, 0, 0);
@@ -54,9 +42,50 @@ const getEventFullDays = (eventCurrent, eventNext) => {
   return diffInDays;
 };
 
+const sortEventsByDate = (firstEvent, secondEvent) => {
+  if (firstEvent.dateStart < secondEvent.dateStart) {
+    return -1;
+  }
+
+  if (firstEvent.dateStart > secondEvent.dateStart) {
+    return 1;
+  }
+
+  return 0;
+};
+
+const sortEventsByPrice = (firstEvent, secondEvent) => {
+  if (firstEvent.price < secondEvent.price) {
+    return 1;
+  }
+
+  if (firstEvent.price > secondEvent.price) {
+    return -1;
+  }
+
+  return 0;
+};
+
+const sortEventsByTime = (firstEvent, secondEvent) => {
+  const firstEventTime = firstEvent.dateStart - firstEvent.dateEnd;
+  const secondEventTime = secondEvent.dateStart - secondEvent.dateEnd;
+
+  if (firstEventTime < secondEventTime) {
+    return -1;
+  }
+
+  if (firstEventTime > secondEventTime) {
+    return 1;
+  }
+
+  return 0;
+};
+
 export {
   getDateData,
   isItNeedsZero,
+  getEventFullDays,
   sortEventsByDate,
-  getEventFullDays
+  sortEventsByPrice,
+  sortEventsByTime
 };
