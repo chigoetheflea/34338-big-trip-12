@@ -148,9 +148,16 @@ const OFFERS = {
   ]
 };
 
+const SortType = {
+  DEFAULT: `default`,
+  PRICE: `price`,
+  TIME: `time`
+};
+
 export {
   EVENT_TYPES,
   CITIES,
   OFFERS,
-  MONTHES
+  MONTHES,
+  SortType
 };
