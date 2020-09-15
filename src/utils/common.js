@@ -24,9 +24,33 @@ const getShuffledArray = (source) => {
   return source;
 };
 
+const setFirstLetterUpperCase = (source) => {
+  if (!source) {
+    return source;
+  }
+
+  return source[0].toUpperCase() + source.slice(1);
+};
+
+const updateItem = (items, update) => {
+  const index = items.findIndex((item) => item.id === update.id);
+
+  if (index === -1) {
+    return items;
+  }
+
+  return [
+    ...items.slice(0, index),
+    update,
+    ...items.slice(index + 1)
+  ];
+};
+
 export {
   getRandomBoolean,
   getRandomInteger,
   getRandomArrayElement,
-  getShuffledArray
+  getShuffledArray,
+  updateItem,
+  setFirstLetterUpperCase
 };

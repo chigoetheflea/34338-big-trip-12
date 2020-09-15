@@ -1,38 +1,12 @@
-import {EVENT_TYPES, CITIES, OFFERS} from "../const.js";
-import {getRandomInteger, getRandomArrayElement, getShuffledArray} from "../utils.js";
+import {EVENT_TYPES, OFFERS, DESTINATION} from "../const.js";
+import {getRandomInteger, getRandomArrayElement, getShuffledArray, getRandomBoolean} from "../utils.js";
 
-const DESCRIPTION_PHRASES = [
-  `Lorem ipsum dolor sit amet, consectetur adipiscing elit.`,
-  `Cras aliquet varius magna, non porta ligula feugiat eget.`,
-  `Fusce tristique felis at fermentum pharetra.`,
-  `Aliquam id orci ut lectus varius viverra.`,
-  `Nullam nunc ex, convallis sed finibus eget, sollicitudin eget ante.`,
-  `Phasellus eros mauris, condimentum sed nibh vitae, sodales efficitur ipsum.`,
-  `Sed blandit, eros vel aliquam faucibus, purus ex euismod diam, eu luctus nunc ante ut dui.`,
-  `Sed sed nisi sed augue convallis suscipit in sed felis.`,
-  `Aliquam erat volutpat.`,
-  `Nunc fermentum tortor ac porta dapibus.`,
-  `In rutrum ac purus sit amet tempus.`
-];
-
-const PHRASES_COUNT = 5;
-const MAX_PHOTO_COUNT = 5;
 const MAX_MINUTES_JITTER = 60 * 140;
 const MIN_PRICE = 100;
 const MAX_PRICE = 1000;
 const MAX_OFFERS_COUNT = 5;
 
-const getRandomDescription = () => {
-  const shuffledPhrases = getShuffledArray(DESCRIPTION_PHRASES);
-
-  return shuffledPhrases.slice(0, PHRASES_COUNT);
-};
-
-const getPhotoInfo = () => {
-  const randomPhotoCount = getRandomInteger(0, MAX_PHOTO_COUNT);
-
-  return new Array(randomPhotoCount).fill().map(() => `http://picsum.photos/248/152?r=${Math.random()}`);
-};
+const generateId = () => Date.now() + parseInt(Math.random() * 10000, 10);
 
 const getRandomDates = () => {
   const currentDate = new Date();
@@ -58,10 +32,10 @@ const getRandomEventType = (eventTypesData) => {
 };
 
 const getRandomOffers = (eventType) => {
-  const availableOffers = OFFERS[eventType];
+  const availableOffers = OFFERS.filter((offer) => offer.type === eventType);
 
-  if (availableOffers) {
-    const shuffledOffers = getShuffledArray(availableOffers);
+  if (availableOffers.length) {
+    const shuffledOffers = getShuffledArray(availableOffers[0].offers);
 
     return shuffledOffers.slice(0, getRandomInteger(0, MAX_OFFERS_COUNT));
   }
@@ -73,15 +47,16 @@ export const generateEvent = () => {
   const eventType = getRandomEventType(EVENT_TYPES);
   const eventDates = getRandomDates();
   const offers = getRandomOffers(eventType);
+  const destination = getRandomArrayElement(DESTINATION);
 
   return {
+    id: generateId(),
     eventType,
-    destination: getRandomArrayElement(CITIES),
-    description: getRandomDescription(),
-    photo: getPhotoInfo(),
+    destination,
     dateStart: eventDates.dateStart,
     dateEnd: eventDates.dateEnd,
     price: getRandomInteger(MIN_PRICE, MAX_PRICE),
-    offers
+    offers,
+    isFavorite: getRandomBoolean()
   };
 };

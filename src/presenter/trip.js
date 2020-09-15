@@ -1,15 +1,12 @@
 import Sorting from "../view/sorting.js";
 import Days from "../view/days.js";
-import DayItem from "../view/day-item.js";
-import DayInfo from "../view/day-info.js";
-import EventsList from "../view/events-list.js";
-import EventWrapper from "../view/event-wrapper.js";
-import Event from "../view/event.js";
-import EventEditForm from "../view/event-edit-form.js";
 import NoEvents from "../view/no-events.js";
 
-import {render, replace, RenderPosition} from "../utils/render.js";
+import DayPresenter from "../presenter/day.js";
+
+import {render, RenderPosition} from "../utils/render.js";
 import {getDateData, getEventFullDays, sortEventsByTime, sortEventsByPrice} from "../utils/events.js";
+import {updateItem} from "../utils/common.js";
 import {SortType} from "../const.js";
 
 const FIRST_DAY_NUMBER = 1;
@@ -20,12 +17,21 @@ export default class Trip {
     this._tripContainer = container;
     this._events = events;
     this._sort = SortType.DEFAULT;
+    this._isSorted = false;
+
+    this._dayPresenters = {};
 
     this._noEventsComponent = new NoEvents();
     this._sortingComponent = new Sorting();
     this._daysComponent = new Days();
 
     this._sortTypeChangeHandler = this._sortTypeChangeHandler.bind(this);
+    this._eventChangeHandler = this._eventChangeHandler.bind(this);
+    this._modeChangeHandler = this._modeChangeHandler.bind(this);
+  }
+
+  _modeChangeHandler() {
+    Object.values(this._dayPresenters).forEach((presenter) => presenter.resetEventsView());
   }
 
   _toggleDaysTitleVisibility() {
@@ -48,7 +54,7 @@ export default class Trip {
         break;
 
       default:
-        this._events = this._defaultEventsList.slice();
+        this._events = this._defaultEvents.slice();
         this._isSorted = false;
     }
 
@@ -67,7 +73,8 @@ export default class Trip {
   }
 
   _clearEventsList() {
-    this._daysComponent.getElement().innerHTML = ``;
+    Object.values(this._dayPresenters).forEach((presenter) => presenter.destroy());
+    this._dayPresenters = {};
   }
 
   _renderNoEvents() {
@@ -85,63 +92,12 @@ export default class Trip {
   }
 
   _renderDay(container, number, startDate) {
-    render(container, new DayItem(), RenderPosition.BEFOREEND);
+    const dayPresenter = new DayPresenter(container, number, startDate, this._isSorted, this._eventChangeHandler, this._modeChangeHandler);
+    dayPresenter.init();
 
-    this._days = container.querySelectorAll(`.day`);
+    this._dayPresenters[`day-${number}`] = dayPresenter;
 
-    this._renderDayInfo(this._days[this._days.length - 1], number, startDate, this._isSorted);
-
-    this._renderEventsList(this._days[this._days.length - 1]);
-  }
-
-  _renderDayInfo(container, number, startDate, isEmpty) {
-    render(container, new DayInfo(number, startDate, isEmpty), RenderPosition.BEFOREEND);
-  }
-
-  _renderEventsList(container) {
-    render(container, new EventsList(), RenderPosition.BEFOREEND);
-  }
-
-  _renderEventWrapper(container) {
-    render(container, new EventWrapper(), RenderPosition.BEFOREEND);
-  }
-
-  _renderEvent(eventWrapper, event) {
-    const eventRegular = new Event(event);
-    const eventEdit = new EventEditForm(event);
-
-    const replaceEventToForm = () => {
-      replace(eventEdit, eventRegular);
-
-      eventEdit.setFormSubmitHandler(onEventEditFormSubmit);
-
-      document.addEventListener(`keydown`, onEventEditFormEscKeyDown);
-    };
-
-    const replaceFormToEvent = () => {
-      replace(eventRegular, eventEdit);
-    };
-
-    const onEventEditFormSubmit = () => {
-      replaceFormToEvent();
-
-      eventEdit.removeFormSubmitHandler();
-      document.removeEventListener(`keydown`, onEventEditFormEscKeyDown);
-    };
-
-    const onEventEditFormEscKeyDown = (evt) => {
-      if (evt.key === `Escape` || evt.key === `Esc`) {
-        evt.preventDefault();
-
-        replaceFormToEvent();
-      }
-    };
-
-    eventRegular.setClickHandler(() => {
-      replaceEventToForm();
-    });
-
-    render(eventWrapper, eventRegular, RenderPosition.BEFOREEND);
+    return dayPresenter;
   }
 
   _renderEvents() {
@@ -151,7 +107,7 @@ export default class Trip {
     let dayNumber = FIRST_DAY_NUMBER;
     let isSameDay = true;
 
-    this._renderDay(tripDays, dayNumber, tripStartDate);
+    let currentDay = this._renderDay(tripDays, dayNumber, tripStartDate);
 
     for (let i = 0; i < this._events.length; i++) {
       let currentEvent = this._events[i];
@@ -160,7 +116,7 @@ export default class Trip {
         let nextEvent = this._events[i + 1];
 
         if (!isSameDay) {
-          this._renderDay(tripDays, dayNumber, currentEvent.dateStart);
+          currentDay = this._renderDay(tripDays, dayNumber, currentEvent.dateStart);
         }
 
         if (nextEvent) {
@@ -170,19 +126,22 @@ export default class Trip {
         }
       }
 
-      const eventsList = this._days[this._days.length - 1].querySelector(`.trip-events__list`);
-      this._renderEventWrapper(eventsList);
-
-      const eventWrappers = eventsList.querySelectorAll(`.trip-events__item`);
-      this._renderEvent(eventWrappers[eventWrappers.length - 1], currentEvent);
+      currentDay.addEvent(currentEvent);
     }
+  }
+
+  _eventChangeHandler(updatedDay, updatedEvent) {
+    this._events = updateItem(this._events, updatedEvent);
+    this._defaultEvents = updateItem(this._defaultEvents, updatedEvent);
+
+    this._dayPresenters[`day-${updatedDay._dayNumber}`].updateEvent(updatedEvent);
   }
 
   init() {
     if (this._events.length === 0) {
       this._renderNoEvents();
     } else {
-      this._defaultEventsList = this._events.slice();
+      this._defaultEvents = this._events.slice();
 
       this._renderSorting();
       this._renderDays();

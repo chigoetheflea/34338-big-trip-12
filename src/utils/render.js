@@ -68,7 +68,7 @@ const remove = (element) => {
     throw new Error(`Can remove only components.`);
   }
 
-  element.getElement().removeElement();
+  element.getElement().remove();
   element.removeElement();
 };
 
