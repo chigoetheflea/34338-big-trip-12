@@ -1,5 +1,6 @@
 import Abstract from "./abstract.js";
 import {getDateData, isItNeedsZero} from "../utils/events.js";
+import {setFirstLetterUpperCase} from "../utils/common.js";
 
 const HOUR_MS = 3600000;
 const DAY_MS = HOUR_MS * 24;
@@ -28,13 +29,13 @@ const createEventTimingTemplate = (dateStart, dateEnd) => {
 
   return (
     `<div class="event__schedule">
-      <p class="event__time">
-        <time class="event__start-time" datetime="${dateStartData.date}">${dateStartData.time}</time>
-        &mdash;
-        <time class="event__end-time" datetime="${dateEndData.date}">${dateEndData.time}</time>
-      </p>
-      <p class="event__duration">${dateDiff}</p>
-    </div>`
+        <p class="event__time">
+          <time class="event__start-time" datetime="${dateStartData.date}">${dateStartData.time}</time>
+          &mdash;
+          <time class="event__end-time" datetime="${dateEndData.date}">${dateEndData.time}</time>
+        </p>
+        <p class="event__duration">${dateDiff}</p>
+     </div>`
   );
 };
 
@@ -65,19 +66,21 @@ const createEventTemplate = (event) => {
   const offersListTemplate = createOffersListTemplate(offers);
 
   return (
-    `<div class="event">
-      <div class="event__type">
-        <img class="event__type-icon" width="42" height="42" src="img/icons/${eventType.toLowerCase()}.png" alt="Event type icon">
+    `<li class="trip-events__item">
+      <div class="event">
+        <div class="event__type">
+          <img class="event__type-icon" width="42" height="42" src="img/icons/${eventType.toLowerCase()}.png" alt="Event type icon">
+        </div>
+        <h3 class="event__title">${setFirstLetterUpperCase(eventType)} to ${destination.name}</h3>
+        ${eventTimingTemplate}
+        <p class="event__price">
+          &euro;&nbsp;<span class="event__price-value">${price}</span>
+        </p>
+        ${offersListTemplate}
+        <button class="event__rollup-btn" type="button">
+          <span class="visually-hidden">Open event</span>
+        </button>
       </div>
-      <h3 class="event__title">${eventType} to ${destination}</h3>
-      ${eventTimingTemplate}
-      <p class="event__price">
-        &euro;&nbsp;<span class="event__price-value">${price}</span>
-      </p>
-      ${offersListTemplate}
-      <button class="event__rollup-btn" type="button">
-        <span class="visually-hidden">Open event</span>
-      </button>
     </div>`
   );
 };
@@ -103,6 +106,6 @@ export default class Event extends Abstract {
   setClickHandler(callback) {
     this._callback.click = callback;
 
-    this.getElement().addEventListener(`click`, this._clickHandler);
+    this.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, this._clickHandler);
   }
 }

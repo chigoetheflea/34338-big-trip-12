@@ -8,13 +8,13 @@ const SMALL_SEPARATOR = `&nbsp;`;
 const SUBSTITUTE = `&hellip;`;
 
 const createRoutTemplate = (events) => {
-  let rout = events[0].destination;
+  let rout = events[0].destination.name;
 
   if (events.length > MAX_EVENTS_TO_SHOW) {
-    rout += BIG_SEPARATOR + SUBSTITUTE + BIG_SEPARATOR + events[events.length - 1].destination;
+    rout += BIG_SEPARATOR + SUBSTITUTE + BIG_SEPARATOR + events[events.length - 1].destination.name;
   } else {
     for (let i = 1; i < events.length; i++) {
-      rout += BIG_SEPARATOR + events[i].destination;
+      rout += BIG_SEPARATOR + events[i].destination.name;
     }
   }
 
