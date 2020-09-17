@@ -1,15 +1,16 @@
 import Abstract from "./abstract.js";
 import {getDateData, isItNeedsZero} from "../utils/events.js";
 import {setFirstLetterUpperCase} from "../utils/common.js";
+import moment from "moment";
 
 const HOUR_MS = 3600000;
 const DAY_MS = HOUR_MS * 24;
 const MAX_OFFERS_TO_DISPLAY = 3;
 
 const getDateDiff = (dateDiff) => {
-  const days = `${isItNeedsZero(Math.floor(dateDiff / (1000 * 60 * 60 * 24)))}D`;
-  const hours = `${isItNeedsZero(Math.floor((dateDiff / (1000 * 60 * 60)) % 24))}H`;
-  const minutes = `${isItNeedsZero(Math.floor((dateDiff / (1000 * 60)) % 60))}M`;
+  const days = `${isItNeedsZero(moment(dateDiff).date())}D`;
+  const hours = `${isItNeedsZero(moment(dateDiff).hour())}H`;
+  const minutes = `${isItNeedsZero(moment(dateDiff).minute())}M`;
 
   if (dateDiff < HOUR_MS) {
     return minutes;
