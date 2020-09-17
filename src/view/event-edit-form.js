@@ -242,7 +242,6 @@ export default class EventEditForm extends Smart {
 
   _destinationChangeHandler(evt) {
     evt.preventDefault();
-
     const newDestinationValue = evt.target.value;
     const newDestination = DESTINATION.filter((point) => point.name === newDestinationValue);
 
