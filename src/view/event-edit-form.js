@@ -2,6 +2,9 @@ import Smart from "./smart.js";
 import {EVENT_TYPES, CITIES, DESTINATION, OFFERS} from "../const.js";
 import {getDateData} from "../utils/events.js";
 import {getRandomBoolean, getRandomInteger, setFirstLetterUpperCase} from "../utils/common.js";
+import flatpickr from "flatpickr";
+
+import "../../node_modules/flatpickr/dist/flatpickr.min.css";
 
 const BLANK_EVENT = {
   eventType: null,
@@ -15,6 +18,7 @@ const BLANK_EVENT = {
 };
 
 const ID_MAX_JITTER = 100;
+const DATE_FORMAT = `d/m/Y H:i`;
 
 const createEventTypesTemplate = (type, id) => {
   const categoryCloseTemplate = `</fieldset>`;
@@ -189,12 +193,17 @@ export default class EventEditForm extends Smart {
     super();
 
     this._data = event;
+    this._datePickerStart = null;
+    this._datePickerEnd = null;
     this._formSubmitHandler = this._formSubmitHandler.bind(this);
     this._favoriteClickHandler = this._favoriteClickHandler.bind(this);
     this._typeChangeHandler = this._typeChangeHandler.bind(this);
     this._destinationChangeHandler = this._destinationChangeHandler.bind(this);
+    this._dateStartChangeHandler = this._dateStartChangeHandler.bind(this);
+    this._dateEndChangeHandler = this._dateEndChangeHandler.bind(this);
 
     this._setInnerHandlers();
+    this._setDatePickers();
   }
 
   _formSubmitHandler(evt) {
@@ -205,6 +214,18 @@ export default class EventEditForm extends Smart {
 
   _favoriteClickHandler() {
     this._callback.favorite();
+  }
+
+  _dateStartChangeHandler([date]) {
+    this.updateData({
+      dateStart: date
+    });
+  }
+
+  _dateEndChangeHandler([date]) {
+    this.updateData({
+      dateEnd: date
+    });
   }
 
   _typeChangeHandler(evt) {
@@ -221,7 +242,6 @@ export default class EventEditForm extends Smart {
 
   _destinationChangeHandler(evt) {
     evt.preventDefault();
-
     const newDestinationValue = evt.target.value;
     const newDestination = DESTINATION.filter((point) => point.name === newDestinationValue);
 
@@ -241,8 +261,42 @@ export default class EventEditForm extends Smart {
     return createEventEditFormTemplate(this._data);
   }
 
+  _setDatePickers() {
+    if (this._datePickerStart) {
+      this._datePickerStart.destroy();
+      this._datePickerStart = null;
+    }
+
+    this._datePickerStart = flatpickr(
+        this.getElement().querySelector(`[name="event-start-time"]`),
+        {
+          dateFormat: DATE_FORMAT,
+          defaultDate: this._data.dateStart,
+          enableTime: true,
+          onClose: this._dateStartChangeHandler
+        }
+    );
+
+    if (this._datePickerEnd) {
+      this._datePickerEnd.destroy();
+      this._datePickerEnd = null;
+    }
+
+    this._datePickerEnd = flatpickr(
+        this.getElement().querySelector(`[name="event-end-time"]`),
+        {
+          dateFormat: DATE_FORMAT,
+          defaultDate: this._data.dateEnd,
+          enableTime: true,
+          onClose: this._dateEndChangeHandler
+        }
+    );
+  }
+
   restoreHandlers() {
     this._setInnerHandlers();
+    this._setDatePickers();
+
     this.setFormSubmitHandler(this._callback.submit);
     this.setFavoriteClickHandler(this._callback.favorite);
   }
