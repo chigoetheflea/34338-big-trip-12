@@ -8,9 +8,11 @@ const DAY_MS = HOUR_MS * 24;
 const MAX_OFFERS_TO_DISPLAY = 3;
 
 const getDateDiff = (dateDiff) => {
-  const days = `${isItNeedsZero(moment(dateDiff).date())}D`;
-  const hours = `${isItNeedsZero(moment(dateDiff).hour())}H`;
-  const minutes = `${isItNeedsZero(moment(dateDiff).minute())}M`;
+  const duration = moment.duration(dateDiff);
+
+  const days = `${isItNeedsZero(duration.days())}D`;
+  const hours = `${isItNeedsZero(duration.hours())}H`;
+  const minutes = `${isItNeedsZero(duration.minutes())}M`;
 
   if (dateDiff < HOUR_MS) {
     return minutes;

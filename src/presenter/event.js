@@ -1,6 +1,7 @@
 import Event from "../view/event.js";
 import EventEditForm from "../view/event-edit-form.js";
 import {render, replace, remove, RenderPosition} from "../utils/render.js";
+import {UserAction, UpdateType, Key} from "../const.js";
 
 const Mode = {
   DEFAULT: `DEFAULT`,
@@ -8,11 +9,13 @@ const Mode = {
 };
 
 export default class EventPresenter {
-  constructor(eventWrapper, eventDay, changeData, changeMode) {
+  constructor(eventWrapper, eventDay, changeData, changeMode, placesList, offersList) {
     this._container = eventWrapper;
     this._changeData = changeData;
     this._changeMode = changeMode;
     this._day = eventDay;
+    this._placesList = placesList;
+    this._offersList = offersList;
 
     this._eventRegular = null;
     this._eventEdit = null;
@@ -22,13 +25,13 @@ export default class EventPresenter {
     this._eventEditFormSubmitHandler = this._eventEditFormSubmitHandler.bind(this);
     this._eventEditFormEscKeyDownHandler = this._eventEditFormEscKeyDownHandler.bind(this);
     this._eventFavoritesClickHandler = this._eventFavoritesClickHandler.bind(this);
+    this._eventDeleteHandler = this._eventDeleteHandler.bind(this);
   }
 
   _replaceEventToForm() {
     replace(this._eventEdit, this._eventRegular);
 
     document.addEventListener(`keydown`, this._eventEditFormEscKeyDownHandler);
-
 
     this._changeMode();
     this._mode = Mode.EDITING;
@@ -40,15 +43,30 @@ export default class EventPresenter {
     this._mode = Mode.DEFAULT;
   }
 
+  _eventDeleteHandler(event) {
+    this._changeData(
+        UserAction.DELETE_EVENT,
+        UpdateType.MAJOR,
+        event,
+        this._day
+    );
+  }
+
   _eventEditFormSubmitHandler(event) {
-    this._changeData(this._day, event);
+    this._changeData(
+        UserAction.UPDATE_EVENT,
+        UpdateType.MAJOR,
+        event,
+        this._day
+    );
+
     this._replaceFormToEvent();
 
     document.removeEventListener(`keydown`, this._eventEditFormEscKeyDownHandler);
   }
 
   _eventEditFormEscKeyDownHandler(evt) {
-    if (evt.key === `Escape` || evt.key === `Esc`) {
+    if (evt.key === Key.ESCAPE || evt.key === Key.ESC) {
       evt.preventDefault();
 
       this._replaceFormToEvent();
@@ -60,7 +78,12 @@ export default class EventPresenter {
   }
 
   _eventFavoritesClickHandler() {
-    this._changeData(this._day, Object.assign({}, this._event, {isFavorite: !this._event.isFavorite}));
+    this._changeData(
+        UserAction.UPDATE_EVENT,
+        UpdateType.PATCH,
+        this._day,
+        Object.assign({}, this._event, {isFavorite: !this._event.isFavorite})
+    );
   }
 
   build(event) {
@@ -70,11 +93,12 @@ export default class EventPresenter {
     const eventEditPrev = this._eventEdit;
 
     this._eventRegular = new Event(this._event);
-    this._eventEdit = new EventEditForm(this._event);
+    this._eventEdit = new EventEditForm(this._event, this._placesList, this._offersList);
 
     this._eventRegular.setClickHandler(this._eventRegularClickHandler);
     this._eventEdit.setFavoriteClickHandler(this._eventFavoritesClickHandler);
     this._eventEdit.setFormSubmitHandler(this._eventEditFormSubmitHandler);
+    this._eventEdit.setDeleteClickHandler(this._eventDeleteHandler);
 
     if (eventEditPrev === null || eventRegularPrev === null) {
       render(this._container, this._eventRegular, RenderPosition.BEFOREEND);
