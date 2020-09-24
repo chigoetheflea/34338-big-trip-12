@@ -3,13 +3,15 @@ import EventPresenter from "../presenter/event.js";
 import {render, remove, RenderPosition} from "../utils/render.js";
 
 export default class DayPresenter {
-  constructor(container, number, startDate, isEmpty, changeData, changeMode) {
+  constructor(container, number, startDate, isEmpty, changeData, changeMode, placesList, offersList) {
     this._container = container;
     this._number = number;
     this._date = startDate;
     this._isEmpty = isEmpty;
     this._changeData = changeData;
     this._changeMode = changeMode;
+    this._placesList = placesList;
+    this._offersList = offersList;
 
     this._eventPresenters = {};
   }
@@ -22,7 +24,15 @@ export default class DayPresenter {
   }
 
   addEvent(event) {
-    const eventPresenter = new EventPresenter(this._eventContainer, this._day, this._changeData, this._changeMode);
+    const eventPresenter = new EventPresenter(
+        this._eventContainer,
+        this._day,
+        this._changeData,
+        this._changeMode,
+        this._placesList,
+        this._offersList
+    );
+
     eventPresenter.build(event);
 
     this._eventPresenters[event.id] = eventPresenter;

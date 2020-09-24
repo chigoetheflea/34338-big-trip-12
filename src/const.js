@@ -224,11 +224,41 @@ const SortType = {
   TIME: `time`
 };
 
+const UserAction = {
+  UPDATE_EVENT: `UPDATE_EVENT`,
+  ADD_EVENT: `ADD_EVENT`,
+  DELETE_EVENT: `DELETE_EVENT`
+};
+
+const UpdateType = {
+  PATCH: `PATCH`,
+  MINOR: `MINOR`,
+  MAJOR: `MAJOR`
+};
+
+const Filter = {
+  EVERYTHING: `Everything`,
+  FUTURE: `Future`,
+  PAST: `Past`
+};
+
+const Key = {
+  ESC: `Esc`,
+  ESCAPE: `Escape`,
+  DELETE: `Delete`,
+  ENTER: `Enter`,
+  BACKSPACE: `Backspace`
+};
+
 export {
   EVENT_TYPES,
   CITIES,
   DESTINATION,
   OFFERS,
   MONTHES,
-  SortType
+  SortType,
+  UserAction,
+  UpdateType,
+  Filter,
+  Key
 };

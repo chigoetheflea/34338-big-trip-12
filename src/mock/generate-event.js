@@ -1,7 +1,7 @@
 import {EVENT_TYPES, OFFERS, DESTINATION} from "../const.js";
-import {getRandomInteger, getRandomArrayElement, getShuffledArray, getRandomBoolean} from "../utils.js";
+import {getRandomInteger, getRandomArrayElement, getShuffledArray, getRandomBoolean} from "../utils/common.js";
 
-const MAX_MINUTES_JITTER = 60 * 140;
+const MAX_MINUTES_JITTER = 180 * 140;
 const MIN_PRICE = 100;
 const MAX_PRICE = 1000;
 const MAX_OFFERS_COUNT = 5;
@@ -13,7 +13,7 @@ const getRandomDates = () => {
   const dateStart = new Date();
   const dateEnd = new Date();
 
-  let randomMinutes = getRandomInteger(0, MAX_MINUTES_JITTER);
+  let randomMinutes = getRandomInteger(0, MAX_MINUTES_JITTER * (getRandomBoolean() ? 1 : -1));
   dateStart.setMinutes(currentDate.getMinutes() + randomMinutes);
 
   randomMinutes = randomMinutes + getRandomInteger(0, MAX_MINUTES_JITTER);
@@ -43,7 +43,7 @@ const getRandomOffers = (eventType) => {
   return ``;
 };
 
-export const generateEvent = () => {
+const generateEvent = () => {
   const eventType = getRandomEventType(EVENT_TYPES);
   const eventDates = getRandomDates();
   const offers = getRandomOffers(eventType);
@@ -59,4 +59,9 @@ export const generateEvent = () => {
     offers,
     isFavorite: getRandomBoolean()
   };
+};
+
+export {
+  generateEvent,
+  generateId
 };
