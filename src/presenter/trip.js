@@ -1,46 +1,53 @@
 import TripInfo from "../view/trip-info.js";
 import Menu from "../view/menu.js";
-import FilterPresenter from "./filters.js";
-import {filterAlgorithm} from "../utils/filter.js";
 import Sorting from "../view/sorting.js";
 import Days from "../view/days.js";
 import NoEvents from "../view/no-events.js";
+import Statistics from "../view/statistics.js";
 
+import FilterPresenter from "./filters.js";
 import DayPresenter from "../presenter/day.js";
 import EventNewPresenter from "../presenter/eventNew.js";
 
+import {filterAlgorithm} from "../utils/filter.js";
 import {remove, render, RenderPosition} from "../utils/render.js";
 import {getDateData, getEventFullDays, sortEventsByTime, sortEventsByPrice, sortEventsByDate} from "../utils/events.js";
-import {SortType, UpdateType, UserAction, Filter} from "../const.js";
+import {SortType, UpdateType, UserAction, Filter, MenuItem} from "../const.js";
 
 const FIRST_DAY_NUMBER = 1;
 const DAYS_TITLE = `Day`;
+const SCREEN_HIDDEN_CLASS = `trip-events--hidden`;
 
 export default class Trip {
-  constructor(headerContainer, tripContainer, eventsModel, destinationModel, offersModel, filtersModel) {
+  constructor(headerContainer, contentContainer, eventsModel, destinationModel, offersModel, filtersModel) {
     this._eventsModel = eventsModel;
     this._offersModel = offersModel;
     this._destinationModel = destinationModel;
     this._filtersModel = filtersModel;
-
     this._headerContainer = headerContainer;
-    this._tripContainer = tripContainer;
+    this._tripContainer = contentContainer.querySelector(`.trip-events`);
+    this._statisticsContainer = contentContainer;
+
     this._sort = SortType.DEFAULT;
     this._isSorted = false;
+    this._defaultScreen = MenuItem.TABLE;
+    this._activeScreen = MenuItem.TABLE;
 
     this._dayPresenters = {};
 
     this._menuComponent = new Menu();
+    this._noEventsComponent = new NoEvents();
+    this._daysComponent = new Days();
     this._filterComponent = null;
     this._tripInfoComponent = null;
-    this._noEventsComponent = new NoEvents();
     this._sortingComponent = null;
-    this._daysComponent = new Days();
+    this._statisticsComponent = null;
 
     this._sortTypeChangeHandler = this._sortTypeChangeHandler.bind(this);
     this._modeChangeHandler = this._modeChangeHandler.bind(this);
     this._userActionHandler = this._userActionHandler.bind(this);
     this._modelChangeHandler = this._modelChangeHandler.bind(this);
+    this._menuClickHandler = this._menuClickHandler.bind(this);
 
     this._eventsModel.addObserver(this._modelChangeHandler);
     this._filtersModel.addObserver(this._modelChangeHandler);
@@ -123,6 +130,55 @@ export default class Trip {
     this._menuComponent = new Menu();
 
     render(container, this._menuComponent, RenderPosition.BEFOREEND);
+    this._menuComponent.setMenuClickHandler(this._menuClickHandler);
+  }
+
+  _showDefaultScreen() {
+    this._activeScreen = this._defaultScreen;
+
+    this._clearTrip(true);
+    this._renderTrip(true);
+
+    this._tripContainer.classList.remove(SCREEN_HIDDEN_CLASS);
+
+    remove(this._statisticsComponent);
+  }
+
+  _showStatisticsScreen() {
+    this._tripContainer.classList.add(SCREEN_HIDDEN_CLASS);
+
+    if (this._statisticsComponent !== null) {
+      this._statisticsComponent = null;
+    }
+
+    this._statisticsComponent = new Statistics(this._eventsModel.getPoints());
+
+    this._renderStatistics();
+  }
+
+  _renderStatistics() {
+    render(this._statisticsContainer, this._statisticsComponent, RenderPosition.BEFOREEND);
+  }
+
+  _menuClickHandler(item) {
+    if (this._activeScreen !== item) {
+      this._activeScreen = item;
+
+      this._menuComponent.setMenuItem(item);
+
+      switch (item) {
+        case MenuItem.TABLE:
+          this._showDefaultScreen();
+
+          break;
+
+        case MenuItem.STATS:
+          this._showStatisticsScreen();
+
+          break;
+      }
+
+    }
   }
 
   _renderNoEvents() {
@@ -283,7 +339,10 @@ export default class Trip {
   }
 
   createEvent() {
-    this._sort = SortType.DEFAULT;
+    if (this._activeScreen !== this._defaultScreen) {
+      this._showDefaultScreen();
+    }
+
     this._filtersModel.setFilter(UpdateType.MAJOR, Filter.EVERYTHING);
     this._eventNewPresenter.build();
   }

@@ -2,6 +2,7 @@ import Smart from "./smart.js";
 import {EVENT_TYPES, CITIES, Key} from "../const.js";
 import {getDateData} from "../utils/events.js";
 import {getRandomBoolean, getRandomInteger, setFirstLetterUpperCase, getRandomArrayElement} from "../utils/common.js";
+import {generateId} from "../mock/generate-event.js";
 import flatpickr from "flatpickr";
 
 import "../../node_modules/flatpickr/dist/flatpickr.min.css";
@@ -330,6 +331,7 @@ export default class EventEditForm extends Smart {
     return Object.assign(
         data,
         {
+          id: generateId(),
           eventType: defaultEventType,
           offers: defaultOffers[0].offers,
           dateStart: defaultDateStart,
