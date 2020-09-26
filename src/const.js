@@ -250,6 +250,11 @@ const Key = {
   BACKSPACE: `Backspace`
 };
 
+const MenuItem = {
+  TABLE: `table`,
+  STATS: `stats`
+};
+
 export {
   EVENT_TYPES,
   CITIES,
@@ -260,5 +265,6 @@ export {
   UserAction,
   UpdateType,
   Filter,
-  Key
+  Key,
+  MenuItem
 };
