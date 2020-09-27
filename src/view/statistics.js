@@ -26,7 +26,7 @@ const EventTypesIcons = {
 };
 
 const getFilteredEvents = (events, type) => {
-  return events.filter((event) => event.eventType === type);
+  return events.filter((event) => event.type === type);
 };
 
 const getSpendedMoneyByType = (events, type) => {
@@ -35,7 +35,7 @@ const getSpendedMoneyByType = (events, type) => {
   const eventsByType = getFilteredEvents(events, type);
 
   eventsByType.map((event) => {
-    totalPrice += event.price;
+    totalPrice += Number(event.price);
   });
 
   return totalPrice;

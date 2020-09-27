@@ -81,11 +81,14 @@ const sortEventsByTime = (firstEvent, secondEvent) => {
   return 0;
 };
 
+const generateId = () => Date.now() + parseInt(Math.random() * 10000, 10);
+
 export {
   getDateData,
   isItNeedsZero,
   getEventFullDays,
   sortEventsByDate,
   sortEventsByPrice,
-  sortEventsByTime
+  sortEventsByTime,
+  generateId
 };

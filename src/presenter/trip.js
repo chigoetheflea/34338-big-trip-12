@@ -4,6 +4,8 @@ import Sorting from "../view/sorting.js";
 import Days from "../view/days.js";
 import NoEvents from "../view/no-events.js";
 import Statistics from "../view/statistics.js";
+import Loading from "../view/loading.js";
+import AppError from "../view/app-error.js";
 
 import FilterPresenter from "./filters.js";
 import DayPresenter from "../presenter/day.js";
@@ -19,7 +21,7 @@ const DAYS_TITLE = `Day`;
 const SCREEN_HIDDEN_CLASS = `trip-events--hidden`;
 
 export default class Trip {
-  constructor(headerContainer, contentContainer, eventsModel, destinationModel, offersModel, filtersModel) {
+  constructor(headerContainer, contentContainer, eventsModel, destinationModel, offersModel, filtersModel, api) {
     this._eventsModel = eventsModel;
     this._offersModel = offersModel;
     this._destinationModel = destinationModel;
@@ -27,17 +29,23 @@ export default class Trip {
     this._headerContainer = headerContainer;
     this._tripContainer = contentContainer.querySelector(`.trip-events`);
     this._statisticsContainer = contentContainer;
+    this._api = api;
 
     this._sort = SortType.DEFAULT;
-    this._isSorted = false;
     this._defaultScreen = MenuItem.TABLE;
     this._activeScreen = MenuItem.TABLE;
 
+    this._isSorted = false;
+    this._isLoading = true;
+
     this._dayPresenters = {};
+    this._eventNewPresenter = null;
 
     this._menuComponent = new Menu();
     this._noEventsComponent = new NoEvents();
     this._daysComponent = new Days();
+    this._loadingComponent = new Loading();
+    this._appErrorComponent = null;
     this._filterComponent = null;
     this._tripInfoComponent = null;
     this._sortingComponent = null;
@@ -51,13 +59,6 @@ export default class Trip {
 
     this._eventsModel.addObserver(this._modelChangeHandler);
     this._filtersModel.addObserver(this._modelChangeHandler);
-
-    this._eventNewPresenter = new EventNewPresenter(
-        this._daysComponent,
-        this._userActionHandler,
-        this._destinationModel.getPlaces(),
-        this._offersModel.getOffers()
-    );
   }
 
   _getEvents() {
@@ -89,7 +90,9 @@ export default class Trip {
   }
 
   _modeChangeHandler() {
-    this._eventNewPresenter.destroy();
+    if (this._eventNewPresenter !== null) {
+      this._eventNewPresenter.destroy();
+    }
 
     Object.values(this._dayPresenters).forEach((presenter) => presenter.resetEventsView());
   }
@@ -181,6 +184,16 @@ export default class Trip {
     }
   }
 
+  _renderLoading() {
+    render(this._tripContainer, this._loadingComponent, RenderPosition.BEFOREEND);
+  }
+
+  _renderAppError() {
+    this._appErrorComponent = new AppError();
+
+    render(this._tripContainer, this._appErrorComponent, RenderPosition.BEFOREEND);
+  }
+
   _renderNoEvents() {
     if (this._noEventsComponent !== null) {
       this._noEventsComponent = null;
@@ -257,25 +270,36 @@ export default class Trip {
   }
 
   _clearTrip(isFullReset = false) {
-    this._eventNewPresenter.destroy();
+    if (this._eventNewPresenter !== null) {
+      this._eventNewPresenter.destroy();
+    }
 
     Object.values(this._dayPresenters).forEach((presenter) => presenter.destroy());
     this._dayPresenters = {};
 
     remove(this._sortingComponent);
     remove(this._noEventsComponent);
+    remove(this._loadingComponent);
 
     if (isFullReset) {
       remove(this._tripInfoComponent);
       remove(this._menuComponent);
 
-      this._filterComponent.destroy();
+      if (this._filterComponent !== null) {
+        this._filterComponent.destroy();
+      }
 
       this._sort = SortType.DEFAULT;
     }
   }
 
   _renderTrip(isFullRender = false) {
+    if (this._isLoading) {
+      this._renderLoading();
+
+      return;
+    }
+
     if (isFullRender) {
       this._renderTripInfo();
 
@@ -316,6 +340,13 @@ export default class Trip {
         this._dayPresenters[`day-${updatedDay._dayNumber}`].updateEvent(data);
 
         break;
+
+      case UpdateType.INIT:
+        this._isLoading = false;
+
+        remove(this._loadingComponent);
+
+        this._renderTrip(true);
     }
   }
 
@@ -332,7 +363,9 @@ export default class Trip {
         break;
 
       case UserAction.UPDATE_EVENT:
-        this._eventsModel.updatePoint(updateType, update, updateDay);
+        this._api.updateEvent(update).then((response) => {
+          this._eventsModel.updatePoint(updateType, response, updateDay);
+        });
 
         break;
     }
@@ -343,11 +376,32 @@ export default class Trip {
       this._showDefaultScreen();
     }
 
+    if (this._eventNewPresenter !== null) {
+      this._eventNewPresenter.destroy();
+    }
+
+    this._eventNewPresenter = new EventNewPresenter(
+        this._daysComponent,
+        this._userActionHandler,
+        this._destinationModel.getPlaces(),
+        this._offersModel.getOffers()
+    );
+
     this._filtersModel.setFilter(UpdateType.MAJOR, Filter.EVERYTHING);
     this._eventNewPresenter.build();
   }
 
   init() {
+    if (this._appErrorComponent !== null) {
+      remove(this._appErrorComponent);
+    }
+
     this._renderTrip(true);
+  }
+
+  showError() {
+    this._clearTrip(true);
+
+    this._renderAppError();
   }
 }

@@ -891,8 +891,14 @@ main {
   .event__offer-label:hover {
     background-color: rgba(13, 138, 228, 0.6); }
 
+.event__offer-label > * {
+  pointer-events: none;
+}
+
 .event__offer-checkbox:checked + .event__offer-label {
   background-color: #0d8ae4; }
+
+
 
 .event__destination-description {
   width: 560px;

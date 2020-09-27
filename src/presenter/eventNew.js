@@ -1,7 +1,7 @@
 import EventEditForm from "../view/event-edit-form.js";
 import {render, remove, RenderPosition} from "../utils/render.js";
 import {UserAction, UpdateType, Key} from "../const.js";
-import {generateId} from "../mock/generate-event.js";
+import {generateId} from "../utils/events.js";
 
 export default class NewEventPresenter {
   constructor(eventWrapper, changeData, placesList, offersList) {

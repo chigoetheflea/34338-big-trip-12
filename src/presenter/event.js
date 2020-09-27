@@ -41,6 +41,8 @@ export default class EventPresenter {
     replace(this._eventRegular, this._eventEdit);
 
     this._mode = Mode.DEFAULT;
+
+    document.removeEventListener(`keydown`, this._eventEditFormEscKeyDownHandler);
   }
 
   _eventDeleteHandler(event) {
@@ -61,8 +63,6 @@ export default class EventPresenter {
     );
 
     this._replaceFormToEvent();
-
-    document.removeEventListener(`keydown`, this._eventEditFormEscKeyDownHandler);
   }
 
   _eventEditFormEscKeyDownHandler(evt) {
@@ -81,8 +81,8 @@ export default class EventPresenter {
     this._changeData(
         UserAction.UPDATE_EVENT,
         UpdateType.PATCH,
-        this._day,
-        Object.assign({}, this._event, {isFavorite: !this._event.isFavorite})
+        Object.assign({}, this._event, {isFavorite: !this._event.isFavorite}),
+        this._day
     );
   }
 
@@ -93,7 +93,11 @@ export default class EventPresenter {
     const eventEditPrev = this._eventEdit;
 
     this._eventRegular = new Event(this._event);
-    this._eventEdit = new EventEditForm(this._event, this._placesList, this._offersList);
+    this._eventEdit = new EventEditForm(
+        this._event,
+        this._placesList,
+        this._offersList
+    );
 
     this._eventRegular.setClickHandler(this._eventRegularClickHandler);
     this._eventEdit.setFavoriteClickHandler(this._eventFavoritesClickHandler);

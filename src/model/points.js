@@ -1,4 +1,5 @@
 import Observer from "../utils/observer.js";
+import moment from "moment";
 
 export default class Points extends Observer {
   constructor() {
@@ -6,8 +7,14 @@ export default class Points extends Observer {
     this._points = [];
   }
 
-  setPoints(points) {
+  _notify(updateType, update, updateDay = null) {
+    this._observers.forEach((observer) => observer(updateType, update, updateDay));
+  }
+
+  setPoints(updateType, points) {
     this._points = points.slice();
+
+    this._notify(updateType);
   }
 
   getPoints() {
@@ -54,7 +61,44 @@ export default class Points extends Observer {
     this._notify(updateType, update);
   }
 
-  _notify(updateType, update, updateDay = null) {
-    this._observers.forEach((observer) => observer(updateType, update, updateDay));
+  static adaptToClient(sourceEvent) {
+    const adaptedEvent = Object.assign(
+        {},
+        sourceEvent,
+        {
+          price: sourceEvent.base_price,
+          dateStart: moment(sourceEvent.date_from).toDate(),
+          dateEnd: moment(sourceEvent.date_to).toDate(),
+          isFavorite: sourceEvent.is_favorite
+        }
+    );
+
+    delete adaptedEvent.base_price;
+    delete adaptedEvent.date_from;
+    delete adaptedEvent.date_to;
+    delete adaptedEvent.is_favorite;
+
+    return adaptedEvent;
+  }
+
+  static adaptToServer(sourceEvent) {
+    const adaptedEvent = Object.assign(
+        {},
+        sourceEvent,
+        {
+          "base_price": Number(sourceEvent.price),
+          "date_from": sourceEvent.dateStart instanceof Date ? sourceEvent.dateStart.toISOString() : null,
+          "date_to": sourceEvent.dateEnd instanceof Date ? sourceEvent.dateEnd.toISOString() : null,
+          "is_favorite": sourceEvent.isFavorite,
+          "type": sourceEvent.type.toLowerCase()
+        }
+    );
+
+    delete adaptedEvent.price;
+    delete adaptedEvent.dateStart;
+    delete adaptedEvent.dateEnd;
+    delete adaptedEvent.isFavorite;
+
+    return adaptedEvent;
   }
 }
