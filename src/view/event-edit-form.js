@@ -1,21 +1,21 @@
 import Smart from "./smart.js";
-import {EVENT_TYPES, CITIES, Key} from "../const.js";
+import {EVENT_TYPES, Key} from "../const.js";
 import {getDateData} from "../utils/events.js";
-import {getRandomBoolean, getRandomInteger, setFirstLetterUpperCase, getRandomArrayElement} from "../utils/common.js";
-import {generateId} from "../mock/generate-event.js";
+import {getRandomInteger, setFirstLetterUpperCase, getRandomArrayElement} from "../utils/common.js";
+import {generateId} from "../utils/events.js";
 import flatpickr from "flatpickr";
 
 import "../../node_modules/flatpickr/dist/flatpickr.min.css";
 
 const BLANK_EVENT = {
-  eventType: null,
+  type: null,
   destination: ``,
   dateStart: null,
   dateEnd: null,
   price: 0,
   description: ``,
   photo: ``,
-  offers: null
+  offers: []
 };
 
 const RemoveButton = {
@@ -58,8 +58,8 @@ const createEventTypesTemplate = (type, id) => {
   }).join(``)}</div>`;
 };
 
-const createCitiesTemplate = (id) => {
-  return `<datalist id="destination-list-${id}">${CITIES.map((city) => `<option value="${city}"></option>`).join(``)}</datalist>`;
+const createCitiesTemplate = (id, placesList) => {
+  return `<datalist id="destination-list-${id}">${placesList.map((city) => `<option value="${city.name}"></option>`).join(``)}</datalist>`;
 };
 
 const createPhotoTemplate = (pictures) => {
@@ -89,12 +89,18 @@ const createDestinationTemplate = ({description, pictures}) => {
   </section>`;
 };
 
-const createOffersListTemplate = (offers, slug, id) => {
-  if (offers) {
+const createOffersListTemplate = (offers, offersList, slug, id) => {
+  const checkedOffers = [];
+
+  offers.map((offer) => {
+    checkedOffers.push(offer.title);
+  });
+
+  if (offersList) {
     return `<section class="event__section  event__section--offers">
         <h3 class="event__section-title  event__section-title--offers">Offers</h3>
         <div class="event__available-offers">
-          ${offers.map((offer) => {
+          ${offersList.map((offer) => {
     const typeId = id + getRandomInteger(0, ID_MAX_JITTER);
 
     return `<div class="event__offer-selector">
@@ -103,7 +109,9 @@ const createOffersListTemplate = (offers, slug, id) => {
               id="event-offer-${slug}-${typeId}"
               type="checkbox"
               name="event-offer-${slug}"
-              ${getRandomBoolean() ? `checked` : ``}>
+              data-offer-title="${offer.title}"
+              data-offer-price="${offer.price}"
+              ${checkedOffers.includes(offer.title) ? `checked` : ``}>
             <label
               class="event__offer-label"
               for="event-offer-${slug}-${typeId}">
@@ -120,18 +128,18 @@ const createOffersListTemplate = (offers, slug, id) => {
   return ``;
 };
 
-const createEventEditFormTemplate = (event, isNewEventForm) => {
-  const {eventType, destination, dateStart, dateEnd, price, offers, isFavorite, id} = event;
+const createEventEditFormTemplate = (event, isNewEventForm, offersList, placesList) => {
+  const {type, destination, dateStart, dateEnd, price, offers, isFavorite, id, city} = event;
 
-  const eventSlug = eventType.toLowerCase();
+  const eventSlug = type.toLowerCase();
 
-  const eventTypesTemplate = createEventTypesTemplate(eventType, id);
+  const eventTypesTemplate = createEventTypesTemplate(type, id);
 
-  const citiesListTemplate = createCitiesTemplate(id);
+  const citiesListTemplate = createCitiesTemplate(id, placesList);
 
   const destinationTemplate = createDestinationTemplate(destination);
 
-  const offersListTemplate = createOffersListTemplate(offers, eventSlug, id);
+  const offersListTemplate = createOffersListTemplate(offers, offersList, eventSlug, id);
 
   return (
     `<li class="trip-events__item">
@@ -148,9 +156,9 @@ const createEventEditFormTemplate = (event, isNewEventForm) => {
 
           <div class="event__field-group  event__field-group--destination">
             <label class="event__label  event__type-output" for="event-destination-${id}">
-              ${setFirstLetterUpperCase(eventType)} to
+              ${setFirstLetterUpperCase(type)} to
             </label>
-            <input class="event__input  event__input--destination" id="event-destination-${id}" type="text" name="event-destination" value="${destination.name}" list="destination-list-${id}" >
+            <input class="event__input  event__input--destination" id="event-destination-${id}" type="text" name="event-destination" value="${city}" list="destination-list-${id}" >
             ${citiesListTemplate}
           </div>
 
@@ -214,6 +222,7 @@ export default class EventEditForm extends Smart {
     this._dateEndChangeHandler = this._dateEndChangeHandler.bind(this);
     this._formDeleteClickHandler = this._formDeleteClickHandler.bind(this);
     this._priceChangeHandler = this._priceChangeHandler.bind(this);
+    this._offersChangeHandler = this._offersChangeHandler.bind(this);
 
     this._setInnerHandlers();
     this._setDatePickers();
@@ -251,11 +260,9 @@ export default class EventEditForm extends Smart {
     evt.preventDefault();
 
     const newType = evt.target.control.value;
-    const availableOffers = this._offersList.filter((offer) => offer.type.toLowerCase() === newType);
 
     this.updateData({
-      eventType: setFirstLetterUpperCase(newType),
-      offers: availableOffers.length ? availableOffers[0].offers : null
+      type: setFirstLetterUpperCase(newType)
     });
   }
 
@@ -267,7 +274,8 @@ export default class EventEditForm extends Smart {
 
     if (newDestination.length) {
       this.updateData({
-        destination: newDestination[0]
+        destination: newDestination[0],
+        city: newDestinationValue
       });
     }
   }
@@ -304,25 +312,51 @@ export default class EventEditForm extends Smart {
     }
   }
 
+  _offersChangeHandler(evt) {
+    const isCheckbox = evt.target.type === `checkbox`;
+    const choosenOffers = [];
+
+    if (isCheckbox) {
+      const offersOptions = this.getElement().querySelectorAll(`.event__offer-checkbox`);
+
+      for (let option of offersOptions) {
+        if (option.checked) {
+          choosenOffers.push({
+            title: option.dataset.offerTitle,
+            price: Number(option.dataset.offerPrice)
+          });
+        }
+      }
+
+      this.updateData({
+        offers: choosenOffers
+      });
+    }
+  }
+
   _setInnerHandlers() {
     this.getElement().querySelector(`.event__type-list`).addEventListener(`click`, this._typeChangeHandler);
 
     this._destinationField = this.getElement().querySelector(`.event__input--destination`);
-    this._destinationField.addEventListener(`change`, this._destinationChangeHandler);
+    this._destinationField.addEventListener(`input`, this._destinationChangeHandler);
     this._destinationField.addEventListener(`keyup`, this._destinationInputHandler);
 
     this._priceField = this.getElement().querySelector(`.event__input--price`);
     this._priceField.addEventListener(`change`, this._priceChangeHandler);
+    // this._priceField.addEventListener(`input`, this._priceInputHandler);
+
+    this._offersContainer = this.getElement().querySelector(`.event__available-offers`);
+    this._offersContainer.addEventListener(`click`, this._offersChangeHandler);
   }
 
   _setDefaultData(data) {
-    if (data.eventType !== null) {
+    if (data.type !== null) {
       return data;
     }
 
     const defaultEventType = EVENT_TYPES.Transfer[0];
     const defaultDestination = getRandomArrayElement(this._placesList);
-    const defaultOffers = this._offersList.filter((offer) => offer.type === defaultEventType);
+    const defaultCity = defaultDestination.name;
     const defaultDateStart = new Date();
     const defaultDateEnd = new Date();
 
@@ -332,17 +366,22 @@ export default class EventEditForm extends Smart {
         data,
         {
           id: generateId(),
-          eventType: defaultEventType,
-          offers: defaultOffers[0].offers,
+          type: defaultEventType,
           dateStart: defaultDateStart,
           dateEnd: defaultDateEnd,
-          destination: defaultDestination
+          destination: defaultDestination,
+          city: defaultCity
         }
     );
   }
 
   _getTemplate() {
-    return createEventEditFormTemplate(this._setDefaultData(this._data), this._isNewEventForm);
+    return createEventEditFormTemplate(
+        this._setDefaultData(this._data),
+        this._isNewEventForm,
+        this._offersList.filter((offer) => offer.type === this._data.type.toLowerCase())[0].offers,
+        this._placesList
+    );
   }
 
   _setDatePickers() {
@@ -360,7 +399,7 @@ export default class EventEditForm extends Smart {
           dateFormat: DATE_FORMAT,
           defaultDate: this._data.dateStart || new Date(),
           enableTime: true,
-          onChange: this._dateStartChangeHandler
+          onClose: this._dateStartChangeHandler
         }
     );
 
@@ -376,7 +415,7 @@ export default class EventEditForm extends Smart {
           defaultDate: this._data.dateEnd || new Date(),
           enableTime: true,
           minDate: this._data.dateStart,
-          onChange: this._dateEndChangeHandler
+          onClose: this._dateEndChangeHandler
         }
     );
   }

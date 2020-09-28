@@ -24,6 +24,7 @@ const createRoutTemplate = (events) => {
 };
 
 const createDatesTemplate = (dateStart, dateEnd) => {
+
   const firstEventDate = {
     year: dateStart.getFullYear(),
     month: MONTHES[dateStart.getMonth()],

@@ -3,31 +3,45 @@ import Points from "./model/points.js";
 import Places from "./model/places.js";
 import Offers from "./model/offers.js";
 import Filters from "./model/filters.js";
+import Api from "./api.js";
 
-import {sortEventsByDate} from "./utils/events.js";
-import {generateEvent} from "./mock/generate-event.js";
-import {DESTINATION, OFFERS} from "./const.js";
+import {UpdateType} from "./const.js";
 
-const EVENTS_COUNT = 5;
-
-const eventsData = new Array(EVENTS_COUNT).fill().map(generateEvent).sort(sortEventsByDate);
+const AUTORIZATION = `Basic er883jdzbdw`;
+const END_POINT = `https://12.ecmascript.pages.academy/big-trip/`;
 
 const headerSection = document.querySelector(`.trip-main`);
 const contentSection = document.querySelector(`.page-main .page-body__container`);
 
+const api = new Api(END_POINT, AUTORIZATION);
 const pointsModel = new Points();
-pointsModel.setPoints(eventsData);
-
 const destinationModel = new Places();
-destinationModel.setPlaces(DESTINATION);
-
 const offersModel = new Offers();
-offersModel.setOffers(OFFERS);
-
 const filtersModel = new Filters();
 
-const tripPresenter = new Trip(headerSection, contentSection, pointsModel, destinationModel, offersModel, filtersModel);
+const tripPresenter = new Trip(headerSection, contentSection, pointsModel, destinationModel, offersModel, filtersModel, api);
 tripPresenter.init();
+
+api.getOffers()
+  .then((offers) => {
+    offersModel.setOffers(offers);
+
+    api.getPlaces()
+      .then((places) => {
+        destinationModel.setPlaces(places);
+
+        api.getEvents()
+          .then((events) => {
+            pointsModel.setPoints(UpdateType.INIT, events);
+          })
+          .catch(() => {
+            pointsModel.setPoints(UpdateType.INIT, []);
+          });
+      });
+  })
+  .catch(() => {
+    tripPresenter.showError();
+  });
 
 document.querySelector(`.trip-main__event-add-btn`).addEventListener(`click`, (evt) => {
   evt.preventDefault();
