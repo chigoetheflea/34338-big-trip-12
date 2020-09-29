@@ -66,7 +66,7 @@ const sortEventsByPrice = (firstEvent, secondEvent) => {
   return 0;
 };
 
-const sortEventsByTime = (firstEvent, secondEvent) => {
+const sortEventsByDuration = (firstEvent, secondEvent) => {
   const firstEventTime = firstEvent.dateStart - firstEvent.dateEnd;
   const secondEventTime = secondEvent.dateStart - secondEvent.dateEnd;
 
@@ -81,14 +81,11 @@ const sortEventsByTime = (firstEvent, secondEvent) => {
   return 0;
 };
 
-const generateId = () => Date.now() + parseInt(Math.random() * 10000, 10);
-
 export {
   getDateData,
   isItNeedsZero,
   getEventFullDays,
   sortEventsByDate,
   sortEventsByPrice,
-  sortEventsByTime,
-  generateId
+  sortEventsByDuration
 };

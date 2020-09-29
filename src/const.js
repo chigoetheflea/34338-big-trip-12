@@ -1,5 +1,5 @@
-const EVENT_TYPES = {
-  Transfer: [
+const EventType = {
+  TRANSFER: [
     `taxi`,
     `bus`,
     `train`,
@@ -8,21 +8,12 @@ const EVENT_TYPES = {
     `drive`,
     `flight`
   ],
-  Activity: [
+  ACTIVITY: [
     `check-in`,
     `sightseeing`,
     `restaurant`
   ]
 };
-
-const CITIES = [
-  `Amsterdam`,
-  `Geneva`,
-  `Chamonix`,
-  `Saint Petersburg`,
-  `Antananarivo`,
-  `Reykjavik`
-];
 
 const MONTHES = [
   `JAN`,
@@ -48,7 +39,8 @@ const SortType = {
 const UserAction = {
   UPDATE_EVENT: `UPDATE_EVENT`,
   ADD_EVENT: `ADD_EVENT`,
-  DELETE_EVENT: `DELETE_EVENT`
+  DELETE_EVENT: `DELETE_EVENT`,
+  UPDATE_FAVORITES: `UPDATE_FAVORITES`
 };
 
 const UpdateType = {
@@ -78,9 +70,8 @@ const MenuItem = {
 };
 
 export {
-  EVENT_TYPES,
-  CITIES,
   MONTHES,
+  EventType,
   SortType,
   UserAction,
   UpdateType,

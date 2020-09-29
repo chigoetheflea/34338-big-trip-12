@@ -2,7 +2,9 @@ import Points from "./model/points.js";
 
 const Method = {
   GET: `GET`,
-  PUT: `PUT`
+  PUT: `PUT`,
+  POST: `POST`,
+  DELETE: `DELETE`
 };
 
 const SuccessHTTPStatusRange = {
@@ -32,15 +34,33 @@ export default class Api {
       .then(Api.toJSON);
   }
 
-  updateEvent(eventToUpdate) {
+  updateEvent(updateEvent) {
     return this._load({
-      url: `points/${eventToUpdate.id}`,
+      url: `points/${updateEvent.id}`,
       method: Method.PUT,
-      body: JSON.stringify(Points.adaptToServer(eventToUpdate)),
+      body: JSON.stringify(Points.adaptToServer(updateEvent)),
       headers: new Headers({"Content-Type": `application/json`})
     })
       .then(Api.toJSON)
       .then(Points.adaptToClient);
+  }
+
+  addEvent(newEvent) {
+    return this._load({
+      url: `points`,
+      method: Method.POST,
+      body: JSON.stringify(Points.adaptToServer(newEvent)),
+      headers: new Headers({"Content-Type": `application/json`})
+    })
+      .then(Api.toJSON)
+      .then(Points.adaptToClient);
+  }
+
+  deleteEvent(deletedEvent) {
+    return this._load({
+      url: `points/${deletedEvent.id}`,
+      method: Method.DELETE
+    });
   }
 
   _load({

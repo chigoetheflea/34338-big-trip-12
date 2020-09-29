@@ -33,4 +33,8 @@ export default class DayItem extends Abstract {
   _getTemplate() {
     return createDayItemTemplate(this._dayNumber, this._curretDate, this._isEmpty);
   }
+
+  getNumber() {
+    return this._dayNumber;
+  }
 }

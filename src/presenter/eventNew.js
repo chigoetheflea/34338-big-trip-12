@@ -1,15 +1,14 @@
 import EventEditForm from "../view/event-edit-form.js";
 import {render, remove, RenderPosition} from "../utils/render.js";
 import {UserAction, UpdateType, Key} from "../const.js";
-import {generateId} from "../utils/events.js";
 
 export default class NewEventPresenter {
   constructor(eventWrapper, changeData, placesList, offersList) {
     this._container = eventWrapper;
     this._changeData = changeData;
-    this._day = null;
     this._placesList = placesList;
     this._offersList = offersList;
+    this._day = null;
     this._eventEdit = null;
 
     this._eventEditFormSubmitHandler = this._eventEditFormSubmitHandler.bind(this);
@@ -25,11 +24,9 @@ export default class NewEventPresenter {
     this._changeData(
         UserAction.ADD_EVENT,
         UpdateType.MAJOR,
-        Object.assign({id: generateId()}, event),
+        event,
         this._day
     );
-
-    this.destroy();
 
     document.removeEventListener(`keydown`, this._eventEditFormEscKeyDownHandler);
   }
@@ -40,6 +37,25 @@ export default class NewEventPresenter {
 
       this.destroy();
     }
+  }
+
+  setSavingState() {
+    this._eventEdit.updateData({
+      isDisabled: true,
+      isSaving: true
+    });
+  }
+
+  setAbortingState() {
+    const resetFormState = () => {
+      this._eventEdit.updateData({
+        isDisabled: false,
+        isSaving: false,
+        isDeleting: false
+      });
+    };
+
+    this._eventEdit.shake(resetFormState);
   }
 
   build() {

@@ -69,7 +69,10 @@ export default class Points extends Observer {
           price: sourceEvent.base_price,
           dateStart: moment(sourceEvent.date_from).toDate(),
           dateEnd: moment(sourceEvent.date_to).toDate(),
-          isFavorite: sourceEvent.is_favorite
+          isFavorite: sourceEvent.is_favorite,
+          isDisabled: false,
+          isSaving: false,
+          isDeleting: false
         }
     );
 
@@ -98,6 +101,9 @@ export default class Points extends Observer {
     delete adaptedEvent.dateStart;
     delete adaptedEvent.dateEnd;
     delete adaptedEvent.isFavorite;
+    delete adaptedEvent.isDisabled;
+    delete adaptedEvent.isSaving;
+    delete adaptedEvent.isDeleting;
 
     return adaptedEvent;
   }
