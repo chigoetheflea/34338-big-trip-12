@@ -1,7 +1,7 @@
 import Abstract from "./smart.js";
 import Chart from "chart.js";
 import ChartDataLabels from 'chartjs-plugin-datalabels';
-import {EVENT_TYPES} from "../const.js";
+import {EventType} from "../const.js";
 import moment from "moment";
 
 const BAR_HEIGHT = 55;
@@ -52,7 +52,7 @@ const getEventTypesWithIcons = (eventTypes) => {
 const renderMoneyChart = (moneyCtx, events) => {
   moneyCtx.height = CtxHeight.MONEY;
 
-  const eventTypes = Object.values(EVENT_TYPES).flat();
+  const eventTypes = Object.values(EventType).flat();
 
   return new Chart(moneyCtx, {
     plugins: [ChartDataLabels],
@@ -127,7 +127,7 @@ const getTransferUsesNumber = (events, types) => {
 const renderTransportChart = (transportCtx, events) => {
   transportCtx.height = CtxHeight.TRANSPORT;
 
-  const eventTypes = Object.values(EVENT_TYPES.Transfer);
+  const eventTypes = Object.values(EventType.TRANSFER);
 
   return new Chart(transportCtx, {
     plugins: [ChartDataLabels],
@@ -214,7 +214,7 @@ const getEventTypesFullTime = (events, eventTypes) => {
 const renderTimeChart = (transportCtx, events) => {
   transportCtx.height = CtxHeight.TIME;
 
-  const eventTypes = Object.values(EVENT_TYPES).flat();
+  const eventTypes = Object.values(EventType).flat();
 
   return new Chart(transportCtx, {
     plugins: [ChartDataLabels],

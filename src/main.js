@@ -19,7 +19,16 @@ const destinationModel = new Places();
 const offersModel = new Offers();
 const filtersModel = new Filters();
 
-const tripPresenter = new Trip(headerSection, contentSection, pointsModel, destinationModel, offersModel, filtersModel, api);
+const tripPresenter = new Trip(
+    headerSection,
+    contentSection,
+    pointsModel,
+    destinationModel,
+    offersModel,
+    filtersModel,
+    api
+);
+
 tripPresenter.init();
 
 api.getOffers()

@@ -42,6 +42,10 @@ export default class DayPresenter {
     this._eventPresenters[event.id].build(event);
   }
 
+  updateEventState(event, state) {
+    this._eventPresenters[event.id].setViewState(state);
+  }
+
   resetEventsView() {
     Object.values(this._eventPresenters).forEach((presenter) => presenter.resetView());
   }

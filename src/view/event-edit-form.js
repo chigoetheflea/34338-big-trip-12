@@ -1,8 +1,7 @@
 import Smart from "./smart.js";
-import {EVENT_TYPES, Key} from "../const.js";
+import {EventType, Key} from "../const.js";
 import {getDateData} from "../utils/events.js";
 import {getRandomInteger, setFirstLetterUpperCase, getRandomArrayElement} from "../utils/common.js";
-import {generateId} from "../utils/events.js";
 import flatpickr from "flatpickr";
 
 import "../../node_modules/flatpickr/dist/flatpickr.min.css";
@@ -15,7 +14,12 @@ const BLANK_EVENT = {
   price: 0,
   description: ``,
   photo: ``,
-  offers: []
+  offers: [],
+  id: null,
+  isFavorite: false,
+  isDisabled: false,
+  isSaving: false,
+  isDeleting: false
 };
 
 const RemoveButton = {
@@ -26,11 +30,14 @@ const RemoveButton = {
 const ID_MAX_JITTER = 100;
 const DATE_FORMAT = `d/m/Y H:i`;
 const PRICE_ERROR_MESSAGE = `Invalid price`;
+const SAVE_IN_PROGRESS_TEXT = `Saving...`;
+const SAVE_TEXT = `Save`;
+const DELETE_IN_PROGRESS_TEXT = `Deleting...`;
 
 const createEventTypesTemplate = (type, id) => {
   const categoryCloseTemplate = `</fieldset>`;
 
-  return `<div class="event__type-list">${Object.entries(EVENT_TYPES).map(([eventCategory, eventTypes]) => {
+  return `<div class="event__type-list">${Object.entries(EventType).map(([eventCategory, eventTypes]) => {
     const categoryOpenTemplate = `<fieldset class="event__type-group">
     <legend class="visually-hidden">${eventCategory}</legend>`;
 
@@ -129,7 +136,20 @@ const createOffersListTemplate = (offers, offersList, slug, id) => {
 };
 
 const createEventEditFormTemplate = (event, isNewEventForm, offersList, placesList) => {
-  const {type, destination, dateStart, dateEnd, price, offers, isFavorite, id, city} = event;
+  const {
+    type,
+    destination,
+    dateStart,
+    dateEnd,
+    price,
+    offers,
+    isFavorite,
+    id,
+    city,
+    isDisabled,
+    isSaving,
+    isDeleting
+  } = event;
 
   const eventSlug = type.toLowerCase();
 
@@ -140,6 +160,8 @@ const createEventEditFormTemplate = (event, isNewEventForm, offersList, placesLi
   const destinationTemplate = createDestinationTemplate(destination);
 
   const offersListTemplate = createOffersListTemplate(offers, offersList, eventSlug, id);
+
+  const actualDeleteText = isNewEventForm ? RemoveButton.CANCEL : RemoveButton.DELETE;
 
   return (
     `<li class="trip-events__item">
@@ -182,10 +204,14 @@ const createEventEditFormTemplate = (event, isNewEventForm, offersList, placesLi
             <input class="event__input  event__input--price" id="event-price-${id}" type="text" name="event-price" value="${price}">
           </div>
 
-          <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
-          <button class="event__reset-btn" type="reset">${isNewEventForm ? RemoveButton.CANCEL : RemoveButton.DELETE}</button>
+          <button class="event__save-btn  btn  btn--blue" type="submit" ${isDisabled ? `disabled` : ``}>
+          ${isSaving ? SAVE_IN_PROGRESS_TEXT : SAVE_TEXT}
+          </button>
+          <button class="event__reset-btn" type="reset" ${isDisabled ? `disabled` : ``}>
+          ${isDeleting ? DELETE_IN_PROGRESS_TEXT : actualDeleteText}
+          </button>
 
-          <input id="event-favorite-${id}" class="event__favorite-checkbox  visually-hidden" type="checkbox" name="event-favorite" ${isFavorite ? `checked` : ``}>
+          <input id="event-favorite-${id}" class="event__favorite-checkbox  visually-hidden" type="checkbox" name="event-favorite" ${isFavorite ? `checked` : ``} ${isDisabled ? `disabled` : ``}>
           <label class="event__favorite-btn ${isNewEventForm ? `visually-hidden` : ``}" for="event-favorite-${id}">
             <span class="visually-hidden">Add to favorite</span>
             <svg class="event__favorite-icon" width="28" height="28" viewBox="0 0 28 28">
@@ -210,9 +236,11 @@ export default class EventEditForm extends Smart {
     this._data = event;
     this._placesList = placesList;
     this._offersList = offersList;
+    this._isNewEventForm = isNewEventForm;
+
     this._datePickerStart = null;
     this._datePickerEnd = null;
-    this._isNewEventForm = isNewEventForm;
+
     this._formSubmitHandler = this._formSubmitHandler.bind(this);
     this._favoriteClickHandler = this._favoriteClickHandler.bind(this);
     this._typeChangeHandler = this._typeChangeHandler.bind(this);
@@ -262,7 +290,8 @@ export default class EventEditForm extends Smart {
     const newType = evt.target.control.value;
 
     this.updateData({
-      type: setFirstLetterUpperCase(newType)
+      type: setFirstLetterUpperCase(newType),
+      offers: []
     });
   }
 
@@ -343,7 +372,6 @@ export default class EventEditForm extends Smart {
 
     this._priceField = this.getElement().querySelector(`.event__input--price`);
     this._priceField.addEventListener(`change`, this._priceChangeHandler);
-    // this._priceField.addEventListener(`input`, this._priceInputHandler);
 
     this._offersContainer = this.getElement().querySelector(`.event__available-offers`);
     this._offersContainer.addEventListener(`click`, this._offersChangeHandler);
@@ -354,7 +382,7 @@ export default class EventEditForm extends Smart {
       return data;
     }
 
-    const defaultEventType = EVENT_TYPES.Transfer[0];
+    const defaultEventType = EventType.TRANSFER[0];
     const defaultDestination = getRandomArrayElement(this._placesList);
     const defaultCity = defaultDestination.name;
     const defaultDateStart = new Date();
@@ -365,7 +393,6 @@ export default class EventEditForm extends Smart {
     return Object.assign(
         data,
         {
-          id: generateId(),
           type: defaultEventType,
           dateStart: defaultDateStart,
           dateEnd: defaultDateEnd,
@@ -425,6 +452,7 @@ export default class EventEditForm extends Smart {
     this._setDatePickers();
 
     this.setFormSubmitHandler(this._callback.submit);
+    this.setDeleteClickHandler(this._callback.delete);
     this.setFavoriteClickHandler(this._callback.favorite);
   }
 

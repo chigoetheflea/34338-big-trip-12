@@ -13,8 +13,9 @@ import EventNewPresenter from "../presenter/eventNew.js";
 
 import {filterAlgorithm} from "../utils/filter.js";
 import {remove, render, RenderPosition} from "../utils/render.js";
-import {getDateData, getEventFullDays, sortEventsByTime, sortEventsByPrice, sortEventsByDate} from "../utils/events.js";
+import {getDateData, getEventFullDays, sortEventsByDuration, sortEventsByPrice, sortEventsByDate} from "../utils/events.js";
 import {SortType, UpdateType, UserAction, Filter, MenuItem} from "../const.js";
+import {State} from "./event.js";
 
 const FIRST_DAY_NUMBER = 1;
 const DAYS_TITLE = `Day`;
@@ -74,7 +75,7 @@ export default class Trip {
         break;
 
       case SortType.TIME:
-        events = filteredEvents.sort(sortEventsByTime);
+        events = filteredEvents.sort(sortEventsByDuration);
         this._isSorted = true;
 
         break;
@@ -180,7 +181,6 @@ export default class Trip {
 
           break;
       }
-
     }
   }
 
@@ -318,6 +318,7 @@ export default class Trip {
       this._renderSorting();
 
       this._renderDays();
+
       this._renderEvents();
     }
   }
@@ -337,7 +338,7 @@ export default class Trip {
         break;
 
       case UpdateType.PATCH:
-        this._dayPresenters[`day-${updatedDay._dayNumber}`].updateEvent(data);
+        this._dayPresenters[`day-${updatedDay.getNumber()}`].updateEvent(data);
 
         break;
 
@@ -350,22 +351,57 @@ export default class Trip {
     }
   }
 
-  _userActionHandler(actionType, updateType, update, updateDay = null) {
+  _userActionHandler(actionType, updateType, update, updatedDay = null) {
     switch (actionType) {
       case UserAction.ADD_EVENT:
-        this._eventsModel.addPoint(updateType, update);
+        this._eventNewPresenter.setSavingState();
+
+        this._api.addEvent(update)
+          .then((response) => {
+            this._eventsModel.addPoint(updateType, response);
+          })
+          .catch(() => {
+            this._eventNewPresenter.setAbortingState();
+          });
 
         break;
 
       case UserAction.DELETE_EVENT:
-        this._eventsModel.deletePoint(updateType, update);
+        this._dayPresenters[`day-${updatedDay.getNumber()}`].updateEventState(update, State.DELETING);
+
+        this._api.deleteEvent(update)
+          .then(() => {
+            this._eventsModel.deletePoint(updateType, update);
+          })
+          .catch(() => {
+            this._dayPresenters[`day-${updatedDay.getNumber()}`].updateEventState(update, State.ABORTING);
+          });
 
         break;
 
       case UserAction.UPDATE_EVENT:
-        this._api.updateEvent(update).then((response) => {
-          this._eventsModel.updatePoint(updateType, response, updateDay);
-        });
+        this._dayPresenters[`day-${updatedDay.getNumber()}`].updateEventState(update, State.SAVING);
+
+        this._api.updateEvent(update)
+          .then((response) => {
+            this._eventsModel.updatePoint(updateType, response, updatedDay);
+          })
+          .catch(() => {
+            this._dayPresenters[`day-${updatedDay.getNumber()}`].updateEventState(update, State.ABORTING);
+          });
+
+        break;
+
+      case UserAction.UPDATE_FAVORITES:
+        this._dayPresenters[`day-${updatedDay.getNumber()}`].updateEventState(update, State.ADDING);
+
+        this._api.updateEvent(update)
+          .then((response) => {
+            this._eventsModel.updatePoint(updateType, response, updatedDay);
+          })
+          .catch(() => {
+            this._dayPresenters[`day-${updatedDay.getNumber()}`].updateEventState(update, State.ABORTING);
+          });
 
         break;
     }

@@ -13,6 +13,7 @@ export default class Filter {
 
     this._eventsChangeHandler = this._eventsChangeHandler.bind(this);
     this._filterChangeHandler = this._filterChangeHandler.bind(this);
+
     this._eventsModel.addObserver(this._eventsChangeHandler);
     this._filtersModel.addObserver(this._eventsChangeHandler);
   }

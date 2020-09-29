@@ -8,6 +8,13 @@ const Mode = {
   EDITING: `EDITING`
 };
 
+export const State = {
+  SAVING: `SAVING`,
+  DELETING: `DELETING`,
+  ABORTING: `ABORTING`,
+  ADDING: `ADDING`
+};
+
 export default class EventPresenter {
   constructor(eventWrapper, eventDay, changeData, changeMode, placesList, offersList) {
     this._container = eventWrapper;
@@ -17,9 +24,9 @@ export default class EventPresenter {
     this._placesList = placesList;
     this._offersList = offersList;
 
+    this._mode = Mode.DEFAULT;
     this._eventRegular = null;
     this._eventEdit = null;
-    this._mode = Mode.DEFAULT;
 
     this._eventRegularClickHandler = this._eventRegularClickHandler.bind(this);
     this._eventEditFormSubmitHandler = this._eventEditFormSubmitHandler.bind(this);
@@ -61,8 +68,6 @@ export default class EventPresenter {
         event,
         this._day
     );
-
-    this._replaceFormToEvent();
   }
 
   _eventEditFormEscKeyDownHandler(evt) {
@@ -79,7 +84,7 @@ export default class EventPresenter {
 
   _eventFavoritesClickHandler() {
     this._changeData(
-        UserAction.UPDATE_EVENT,
+        UserAction.UPDATE_FAVORITES,
         UpdateType.PATCH,
         Object.assign({}, this._event, {isFavorite: !this._event.isFavorite}),
         this._day
@@ -91,6 +96,8 @@ export default class EventPresenter {
 
     const eventRegularPrev = this._eventRegular;
     const eventEditPrev = this._eventEdit;
+
+    this._prevEdit = eventEditPrev;
 
     this._eventRegular = new Event(this._event);
     this._eventEdit = new EventEditForm(
@@ -115,7 +122,52 @@ export default class EventPresenter {
     }
 
     if (this._mode === Mode.EDITING) {
-      replace(this._eventEdit, eventEditPrev);
+      replace(this._eventRegular, eventEditPrev);
+
+      this._mode = Mode.DEFAULT;
+
+      this._replaceEventToForm();
+    }
+  }
+
+  setViewState(state) {
+    const resetFormState = () => {
+      this._eventEdit.updateData({
+        isDisabled: false,
+        isSaving: false,
+        isDeleting: false
+      });
+    };
+
+    switch (state) {
+      case State.SAVING:
+        this._eventEdit.updateData({
+          isDisabled: true,
+          isSaving: true
+        });
+
+        break;
+
+      case State.DELETING:
+        this._eventEdit.updateData({
+          isDisabled: true,
+          isDeleting: true
+        });
+
+        break;
+
+      case State.ADDING:
+        this._eventEdit.updateData({
+          isDisabled: true
+        });
+
+        break;
+
+      case State.ABORTING:
+        this._eventRegular.shake(resetFormState);
+        this._eventEdit.shake(resetFormState);
+
+        break;
     }
   }
 

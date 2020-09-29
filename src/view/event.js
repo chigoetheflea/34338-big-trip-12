@@ -11,8 +11,16 @@ const getDateDiff = (dateDiff) => {
   const duration = moment.duration(dateDiff);
 
   const days = `${isItNeedsZero(duration.days())}D`;
-  const hours = `${isItNeedsZero(duration.hours())}H`;
-  const minutes = `${isItNeedsZero(duration.minutes())}M`;
+  let hours = `${isItNeedsZero(duration.hours())}H`;
+  let minutes = `${isItNeedsZero(duration.minutes())}M`;
+
+  if (minutes === `00M`) {
+    minutes = ``;
+
+    if (hours === `00H`) {
+      hours = ``;
+    }
+  }
 
   if (dateDiff < HOUR_MS) {
     return minutes;
