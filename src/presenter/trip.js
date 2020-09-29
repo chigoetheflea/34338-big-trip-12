@@ -9,7 +9,7 @@ import AppError from "../view/app-error.js";
 
 import FilterPresenter from "./filters.js";
 import DayPresenter from "../presenter/day.js";
-import EventNewPresenter from "../presenter/eventNew.js";
+import EventNewPresenter from "./event-new.js";
 
 import {filterAlgorithm} from "../utils/filter.js";
 import {remove, render, RenderPosition} from "../utils/render.js";
@@ -351,6 +351,16 @@ export default class Trip {
     }
   }
 
+  _updateEventByApi(update, updateType, updatedDay, state) {
+    this._api.updateEvent(update)
+      .then((response) => {
+        this._eventsModel.updatePoint(updateType, response, updatedDay);
+      })
+      .catch(() => {
+        this._dayPresenters[`day-${updatedDay.getNumber()}`].updateEventState(update, state);
+      });
+  }
+
   _userActionHandler(actionType, updateType, update, updatedDay = null) {
     switch (actionType) {
       case UserAction.ADD_EVENT:
@@ -382,26 +392,14 @@ export default class Trip {
       case UserAction.UPDATE_EVENT:
         this._dayPresenters[`day-${updatedDay.getNumber()}`].updateEventState(update, State.SAVING);
 
-        this._api.updateEvent(update)
-          .then((response) => {
-            this._eventsModel.updatePoint(updateType, response, updatedDay);
-          })
-          .catch(() => {
-            this._dayPresenters[`day-${updatedDay.getNumber()}`].updateEventState(update, State.ABORTING);
-          });
+        this._updateEventByApi(update, updateType, updatedDay, State.ABORTING);
 
         break;
 
       case UserAction.UPDATE_FAVORITES:
         this._dayPresenters[`day-${updatedDay.getNumber()}`].updateEventState(update, State.ADDING);
 
-        this._api.updateEvent(update)
-          .then((response) => {
-            this._eventsModel.updatePoint(updateType, response, updatedDay);
-          })
-          .catch(() => {
-            this._dayPresenters[`day-${updatedDay.getNumber()}`].updateEventState(update, State.ABORTING);
-          });
+        this._updateEventByApi(update, updateType, updatedDay, State.ABORTING);
 
         break;
     }
