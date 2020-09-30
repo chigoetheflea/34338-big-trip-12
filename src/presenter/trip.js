@@ -249,10 +249,10 @@ export default class Trip {
     let currentDay = this._renderDay(tripDays, dayNumber, tripStartDate);
 
     for (let i = 0; i < events.length; i++) {
-      let currentEvent = events[i];
+      const currentEvent = events[i];
 
       if (!this._isSorted) {
-        let nextEvent = events[i + 1];
+        const nextEvent = events[i + 1];
 
         if (!isSameDay) {
           currentDay = this._renderDay(tripDays, dayNumber, currentEvent.dateStart);

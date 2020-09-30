@@ -3,10 +3,10 @@ const isItNeedsZero = (source) => {
 };
 
 const getDateData = (dateData, format = ``) => {
-  let minutes = isItNeedsZero(dateData.getMinutes());
-  let hours = isItNeedsZero(dateData.getHours());
-  let day = isItNeedsZero(dateData.getDate());
-  let month = isItNeedsZero(dateData.getMonth() + 1);
+  const minutes = isItNeedsZero(dateData.getMinutes());
+  const hours = isItNeedsZero(dateData.getHours());
+  const day = isItNeedsZero(dateData.getDate());
+  const month = isItNeedsZero(dateData.getMonth() + 1);
   let year = dateData.getFullYear();
 
   const time = `${hours}:${minutes}`;

@@ -348,7 +348,7 @@ export default class EventEditForm extends Smart {
     if (isCheckbox) {
       const offersOptions = this.getElement().querySelectorAll(`.event__offer-checkbox`);
 
-      for (let option of offersOptions) {
+      for (const option of offersOptions) {
         if (option.checked) {
           choosenOffers.push({
             title: option.dataset.offerTitle,

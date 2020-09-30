@@ -41,7 +41,7 @@ export default class Menu extends Abstract {
   setMenuItem(menuItem) {
     const items = this.getElement().querySelectorAll(`.trip-tabs__btn`);
 
-    for (let item of items) {
+    for (const item of items) {
       item.classList.remove(MENU_ITEM_ACTIVE_CLASS);
     }
 

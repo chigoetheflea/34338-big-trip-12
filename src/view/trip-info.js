@@ -89,7 +89,7 @@ const createTripCostTemplate = (events) => {
 
   if (events.length) {
     totalPrice = events.map((event) => {
-      let eventFullPrice = parseInt(event.price, 10);
+      const eventFullPrice = parseInt(event.price, 10);
       let eventOffersPrice = 0;
 
       if (event.offers.length) {

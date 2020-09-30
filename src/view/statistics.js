@@ -199,7 +199,7 @@ const getEventTypesFullTime = (events, eventTypes) => {
   const eventsFullTime = eventTypes.map((type) => {
     const eventsByType = getFilteredEvents(events, type);
 
-    let eventsDuration = eventsByType.map((event) => {
+    const eventsDuration = eventsByType.map((event) => {
       const duration = moment.duration(event.dateEnd - event.dateStart);
 
       return duration.days();
